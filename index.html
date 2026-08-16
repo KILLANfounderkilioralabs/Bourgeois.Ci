@@ -19,7 +19,7 @@
     <img class="brand__logo" id="brandLogo" src="" alt="" hidden />
     <div>
       <p class="brand__name" id="brandName">Nom de la boutique</p>
-      <p class="brand__trust" id="brandTrust">Livraison rapide • Paiement à la livraison</p>
+      <p class="brand__trust" id="brandTrust">Livraison rapide • Paiement à la livraison • dépot de validation</p>
     </div>
     <span class="header-badge">
       <span class="header-badge__dot"></span>
@@ -44,13 +44,13 @@
 
         <div class="field" id="field-fullName">
           <label for="fullName">Nom complet</label>
-          <input type="text" id="fullName" name="fullName" placeholder="Ex : Awa Koné" autocomplete="name" />
+          <input type="text" id="fullName" name="fullName" placeholder="Ex : Koffi Marie" autocomplete="name" />
           <p class="field-error">⚠ Merci d'indiquer votre nom complet.</p>
         </div>
 
         <div class="field" id="field-phone">
           <label for="phone">Numéro WhatsApp</label>
-          <input type="tel" id="phone" name="phone" placeholder="Ex : 07 00 00 00 00" autocomplete="tel" inputmode="tel" />
+          <input type="tel" id="phone" name="phone" placeholder="Ex : 05 00 00 00 00" autocomplete="tel" inputmode="tel" />
           <p class="field-error">⚠ Merci d'indiquer un numéro WhatsApp valide.</p>
         </div>
       </div>
@@ -61,7 +61,7 @@
 
         <div class="field" id="field-productName">
           <label for="productName">Produit souhaité</label>
-          <input type="text" id="productName" name="productName" placeholder="Ex : Robe rouge" />
+          <input type="text" id="productName" name="productName" placeholder="Ex : Veste en cuire" />
           <p class="field-error">⚠ Merci d'indiquer le produit souhaité.</p>
         </div>
 
@@ -112,15 +112,42 @@
         </div>
       </div>
 
-      <!-- Paiement -->
+      <!-- Mode de paiement -->
       <div class="form-section">
-        <h2 class="form-section__title">💳 Paiement</h2>
+        <h2 class="form-section__title">💳 Comment souhaitez-vous payer ?</h2>
         <div class="field" id="field-payment">
-          <div class="pay-options" id="paymentOptions"></div>
+          <div class="payment-cards" id="paymentCards">
+            <button type="button" class="payment-card" data-value="Paiement à la livraison" aria-pressed="false">
+              <span class="payment-card__icon">💵</span>
+              <span class="payment-card__text">
+                <span class="payment-card__title">Paiement à la livraison</span>
+                <span class="payment-card__desc">Je paie lorsque je reçois ma commande.</span>
+              </span>
+              <span class="payment-card__check" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="payment-card" data-value="Dépôt pour validation" aria-pressed="false">
+              <span class="payment-card__icon">📱</span>
+              <span class="payment-card__text">
+                <span class="payment-card__title">Dépôt pour validation</span>
+                <span class="payment-card__desc">Je fais un dépôt à l'avance pour confirmer ma commande.</span>
+              </span>
+              <span class="payment-card__check" aria-hidden="true"></span>
+            </button>
+          </div>
           <p class="field-error">⚠ Merci de choisir un mode de paiement.</p>
-          <p class="pay-note" id="wavePaymentNote">📸 NB : Une fois sur WhatsApp, merci d'envoyer une capture d'écran de votre paiement pour confirmer votre commande.</p>
         </div>
       </div>
+
+      <!-- Moyen de paiement — un seul bloc, contenu dynamique selon le mode choisi -->
+      <div class="form-section" id="paymentMethodSection" hidden>
+        <h2 class="form-section__title" id="paymentMethodTitle">Moyen de paiement</h2>
+        <div class="field" id="field-paymentMethod">
+          <div class="payment-cards" id="paymentMethodOptions"></div>
+          <p class="field-error">⚠ Merci de choisir un moyen de paiement.</p>
+        </div>
+        <p class="pay-note" id="depositNote"></p>
+      </div>
+
 
       <!-- Commentaire -->
       <div class="form-section">
