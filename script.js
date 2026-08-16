@@ -11,7 +11,7 @@
 
 const STORE = {
   name: "Bourgeois Ci",
-  tagline: "Livraison rapide • Paiement à la livraison • dépot de validation",
+  tagline: "Livraison rapide • Paiement à la livraison • dépôt de validation",
 
   // Numéro WhatsApp du vendeur — format international SANS "+" ni espaces
   whatsapp: "2250502560403",
