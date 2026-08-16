@@ -14,7 +14,7 @@ const STORE = {
   currency: "FCFA",
   primaryColor: "#16a34a",
   defaultUnitPrice: 15000,     // prix pré-rempli, modifiable par le client
-  paymentMethods: [...],
+  depositNote: "...",          // note affichée si "Dépôt pour validation" est choisi
   logoUrl: "logo.png"          // facultatif — voir ci-dessous
 };
 ```
@@ -29,13 +29,17 @@ Aucune autre modification n'est nécessaire.
 
 Le logo apparaît dans l'en-tête, à côté du nom de la boutique. Si l'image ne charge pas (mauvais chemin, fichier manquant), elle est automatiquement masquée pour ne pas casser l'affichage.
 
-### Note automatique pour le paiement Wave
+### Mode de paiement
 
-Si `paymentMethods` contient une option nommée exactement `"Wave"`, une note s'affiche automatiquement sous les modes de paiement dès que le client la sélectionne :
+Le client choisit d'abord entre deux cartes :
+- **💵 Paiement à la livraison**
+- **📱 Dépôt pour validation**
 
-> 📸 NB : Une fois sur WhatsApp, merci d'envoyer une capture d'écran de votre paiement pour confirmer votre commande.
+Un seul bloc **« Moyen de paiement »** apparaît ensuite, et son contenu change automatiquement selon le choix précédent (aucun doublon de bloc) :
+- **Paiement à la livraison** → bloc « Moyen de paiement » avec la liste `STORE.paymentMethodsByMode.delivery` (par défaut : Espèces, Wave, Orange Money, MTN Mobile Money).
+- **Dépôt pour validation** → bloc « Moyen de paiement du dépôt » avec `STORE.paymentMethodsByMode.deposit` (par défaut : Wave, Orange Money, MTN Mobile Money), suivi de la note `STORE.depositNote` (personnalisable avec tes coordonnées de paiement).
 
-Cette note est purement informative (aucun upload, aucun stockage de fichier). Pour la retirer, il suffit de supprimer `"Wave"` de `STORE.paymentMethods`.
+Le mode et le moyen choisis sont tous les deux transmis dans le récapitulatif WhatsApp de la commande.
 
 ## Champs du formulaire
 
