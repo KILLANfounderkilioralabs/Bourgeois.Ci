@@ -11,7 +11,7 @@
 
 const STORE = {
   name: "Bourgeois Ci",
-  tagline: "Livraison rapide • Paiement à la livraison",
+  tagline: "Livraison rapide • Paiement à la livraison • dépot de validation",
 
   // Numéro WhatsApp du vendeur — format international SANS "+" ni espaces
   whatsapp: "2250502560403",
@@ -28,7 +28,23 @@ const STORE = {
   // utile si les prix varient selon les commandes reçues sur TikTok)
   defaultUnitPrice: 15000,
 
-  paymentMethods: ["Orange Money", "Mtn Money", "Wave"]
+  // Texte affiché uniquement si le client choisit "Dépôt pour validation".
+  // Personnalise ce texte avec tes coordonnées de paiement (numéro Wave,
+  // Mobile Money…) si tu veux les afficher directement ici.
+  depositNote: "📸 NB : Une fois sur WhatsApp, merci d'envoyer une capture d'écran de votre paiement Wave pour confirmer votre commande.",
+  // Moyens de paiement proposés selon le mode choisi par le client.
+  paymentMethodsByMode: {
+    delivery: ["Espèces", "Wave", "Orange Money", "MTN Mobile Money"],
+    deposit: ["Wave", "Orange Money", "MTN Mobile Money"]
+  }
+};
+
+// Icônes affichées pour chaque moyen de paiement (facultatif, purement visuel)
+const PAYMENT_METHOD_ICONS = {
+  "Espèces": "💵",
+  "Wave": "📲",
+  "Orange Money": "🟠",
+  "MTN Mobile Money": "💛"
 };
 
 /* =============================================================================
@@ -45,6 +61,7 @@ const STORE = {
   setText("brandTrust", STORE.tagline);
   setText("currencySuffix", STORE.currency);
   setText("footerText", `© ${STORE.name} — Ce site ne stocke aucune donnée. Vos informations sont envoyées uniquement par WhatsApp.`);
+  setText("depositNote", STORE.depositNote);
 
   const logo = document.getElementById("brandLogo");
   if (logo && STORE.logoUrl) {
@@ -77,7 +94,8 @@ function shadeColor(hex, percent) {
 
 const state = {
   quantity: 1,
-  payment: STORE.paymentMethods[0] || ""
+  paymentMode: "",     // "Paiement à la livraison" | "Dépôt pour validation"
+  paymentMethod: ""    // Espèces / Wave / Orange Money / MTN Mobile Money…
 };
 
 function formatPrice(amount) {
@@ -138,41 +156,80 @@ function updateTotal({ flash = false } = {}) {
 }
 
 /* =============================================================================
-   MODES DE PAIEMENT
+   PAIEMENT — étape 1 : mode (livraison / dépôt), cartes sélectionnables
    ========================================================================= */
 
-function renderPaymentOptions() {
-  const wrap = document.getElementById("paymentOptions");
-  wrap.innerHTML = STORE.paymentMethods
+function initPaymentCards() {
+  const cards = document.querySelectorAll("#paymentCards .payment-card");
+
+  cards.forEach(card => {
+    card.addEventListener("click", () => {
+      state.paymentMode = card.dataset.value;
+      state.paymentMethod = ""; // on repart de zéro si le mode change
+
+      cards.forEach(c => {
+        c.classList.remove("is-checked");
+        c.setAttribute("aria-pressed", "false");
+      });
+      card.classList.add("is-checked");
+      card.setAttribute("aria-pressed", "true");
+
+      clearFieldError("field-payment");
+      renderPaymentMethodSection();
+    });
+  });
+}
+
+/* =============================================================================
+   PAIEMENT — étape 2 : un seul bloc "Moyen de paiement", contenu dynamique
+   ========================================================================= */
+
+function renderPaymentMethodSection() {
+  const section = document.getElementById("paymentMethodSection");
+  const title = document.getElementById("paymentMethodTitle");
+  const optionsWrap = document.getElementById("paymentMethodOptions");
+  const note = document.getElementById("depositNote");
+
+  if (!state.paymentMode) {
+    section.hidden = true;
+    return;
+  }
+
+  const isDeposit = state.paymentMode === "Dépôt pour validation";
+  const methods = isDeposit ? STORE.paymentMethodsByMode.deposit : STORE.paymentMethodsByMode.delivery;
+
+  title.textContent = isDeposit ? "Moyen de paiement du dépôt" : "Moyen de paiement";
+
+  optionsWrap.innerHTML = methods
     .map(
-      (method, i) => `
-      <label class="pay-option${i === 0 ? " is-checked" : ""}">
-        <input type="radio" name="payment" value="${method}" ${i === 0 ? "checked" : ""} />
-        <span>${method}</span>
-      </label>`
+      method => `
+      <button type="button" class="payment-card payment-card--compact" data-value="${method}" aria-pressed="${state.paymentMethod === method}">
+        <span class="payment-card__icon">${PAYMENT_METHOD_ICONS[method] || "💳"}</span>
+        <span class="payment-card__text">
+          <span class="payment-card__title">${method}</span>
+        </span>
+        <span class="payment-card__check" aria-hidden="true"></span>
+      </button>`
     )
     .join("");
 
-  wrap.querySelectorAll('input[name="payment"]').forEach(input => {
-    input.addEventListener("change", () => {
-      state.payment = input.value;
-      wrap.querySelectorAll(".pay-option").forEach(el => el.classList.remove("is-checked"));
-      input.closest(".pay-option").classList.add("is-checked");
-      clearFieldError("field-payment");
-      updateWaveNote();
+  const methodCards = optionsWrap.querySelectorAll(".payment-card");
+  methodCards.forEach(card => {
+    if (card.dataset.value === state.paymentMethod) card.classList.add("is-checked");
+    card.addEventListener("click", () => {
+      state.paymentMethod = card.dataset.value;
+      methodCards.forEach(c => {
+        c.classList.remove("is-checked");
+        c.setAttribute("aria-pressed", "false");
+      });
+      card.classList.add("is-checked");
+      card.setAttribute("aria-pressed", "true");
+      clearFieldError("field-paymentMethod");
     });
   });
 
-  updateWaveNote();
-}
-
-/* Affiche une note informative quand le mode de paiement sélectionné est "Wave".
-   Purement informatif — aucun upload, stockage ou sélection de fichier. */
-function updateWaveNote() {
-  const note = document.getElementById("wavePaymentNote");
-  if (!note) return;
-  const isWave = (state.payment || "").trim().toLowerCase() === "wave";
-  note.classList.toggle("is-visible", isWave);
+  note.classList.toggle("is-visible", isDeposit);
+  section.hidden = false;
 }
 
 /* =============================================================================
@@ -197,7 +254,7 @@ function validateForm() {
   const city = document.getElementById("city").value.trim();
   const address = document.getElementById("address").value.trim();
 
-  ["field-fullName", "field-phone", "field-productName", "field-city", "field-address", "field-payment"]
+  ["field-fullName", "field-phone", "field-productName", "field-city", "field-address", "field-payment", "field-paymentMethod"]
     .forEach(clearFieldError);
 
   if (fullName.length < 2) { showFieldError("field-fullName"); isValid = false; }
@@ -211,7 +268,13 @@ function validateForm() {
 
   if (address.length < 3) { showFieldError("field-address"); isValid = false; }
 
-  if (!state.payment) { showFieldError("field-payment"); isValid = false; }
+  if (!state.paymentMode) {
+    showFieldError("field-payment");
+    isValid = false;
+  } else if (!state.paymentMethod) {
+    showFieldError("field-paymentMethod");
+    isValid = false;
+  }
 
   return isValid;
 }
@@ -254,7 +317,9 @@ function buildWhatsAppMessage() {
     `Commune : ${city}`,
     `Adresse : ${address}`,
     "",
-    `💳 Paiement : ${state.payment}`,
+    `💳 Paiement`,
+    `Mode : ${state.paymentMode}`,
+    `Moyen : ${state.paymentMethod}`,
     "",
     `📝 Commentaire : ${comment || "—"}`
   ];
@@ -275,7 +340,7 @@ function openWhatsApp() {
 function handleSubmit(triggerBtn) {
   if (!validateForm()) {
     showToast("Merci de compléter les champs obligatoires.");
-    const firstError = document.querySelector(".field.has-error, #field-payment.has-error");
+    const firstError = document.querySelector(".field.has-error");
     if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
@@ -312,7 +377,7 @@ function showToast(message) {
 function init() {
   initUnitPrice();
   initQuantityControl();
-  renderPaymentOptions();
+  initPaymentCards();
   updateTotal();
 
   ["fullName", "phone", "productName", "city", "address"].forEach(id => {
