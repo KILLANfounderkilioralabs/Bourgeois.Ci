@@ -245,23 +245,55 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
   pointer-events: none;
 }
 
-/* Paiement */
-.pay-options { display: flex; flex-direction: column; gap: 8px; }
-.pay-option {
-  display: flex; align-items: center; gap: 10px;
+/* Mode de paiement — cartes sélectionnables */
+.payment-cards { display: flex; flex-direction: column; gap: 10px; }
+.payment-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
   border: 1.5px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  padding: 12px 13px;
+  background: var(--bg);
+  padding: 14px 15px;
   cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color .15s ease, background .15s ease, transform .1s ease;
+}
+.payment-card:hover { border-color: var(--accent); }
+.payment-card:active { transform: scale(.99); }
+.payment-card__icon { font-size: 21px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+.payment-card__text { display: flex; flex-direction: column; gap: 3px; }
+.payment-card__title { font-weight: 600; font-size: 14px; }
+.payment-card__desc { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.payment-card__check {
+  margin-left: auto;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
   transition: border-color .15s ease, background .15s ease;
 }
-.pay-option:hover { border-color: var(--accent); }
-.pay-option input { accent-color: var(--accent); width: 17px; height: 17px; }
-.pay-option span { font-size: 14px; font-weight: 500; }
-.pay-option.is-checked {
+.payment-card.is-checked {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 8%, var(--surface));
 }
+.payment-card.is-checked .payment-card__title { color: var(--accent-dark); }
+.payment-card.is-checked .payment-card__check {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.payment-card.is-checked .payment-card__check::after {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #fff;
+}
+.payment-card--compact { padding: 12px 15px; }
+.payment-card--compact .payment-card__icon { font-size: 18px; }
 
 /* ---------- Résumé + total ---------- */
 .summary {
