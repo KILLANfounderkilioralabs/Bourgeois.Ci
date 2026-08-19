@@ -29,27 +29,27 @@ Aucune autre modification n'est nécessaire.
 
 Le logo apparaît dans l'en-tête, à côté du nom de la boutique. Si l'image ne charge pas (mauvais chemin, fichier manquant), elle est automatiquement masquée pour ne pas casser l'affichage.
 
-### Mode de paiement
+### Paiement
 
-Le client choisit d'abord entre deux cartes :
-- **💵 Paiement à la livraison**
-- **📱 Dépôt pour validation**
+Le client effectue un **dépôt de validation**, puis paie **le reste à la livraison**.
 
-Un seul bloc **« Moyen de paiement »** apparaît ensuite, et son contenu change automatiquement selon le choix précédent (aucun doublon de bloc) :
-- **Paiement à la livraison** → bloc « Moyen de paiement » avec la liste `STORE.paymentMethodsByMode.delivery` (par défaut : Espèces, Wave, Orange Money, MTN Mobile Money).
-- **Dépôt pour validation** → bloc « Moyen de paiement du dépôt » avec `STORE.paymentMethodsByMode.deposit` (par défaut : Wave, Orange Money, MTN Mobile Money), suivi de la note `STORE.depositNote` (personnalisable avec tes coordonnées de paiement).
+Le formulaire propose trois moyens de paiement pour le dépôt :
+- Orange Money : **07 67 33 67 80**
+- MTN Money : **05 02 56 04 03**
+- Wave : **05 02 56 04 03**
 
-Le mode et le moyen choisis sont tous les deux transmis dans le récapitulatif WhatsApp de la commande.
+Le numéro correspondant s'affiche automatiquement sous le moyen sélectionné.
 
 ## Champs du formulaire
 
 - Numéro WhatsApp
 - Produit souhaité (texte libre), prix unitaire, quantité, taille/couleur (optionnels)
-- Commune/ville, adresse détaillée
-- Mode de paiement
+- Commune/ville, adresse / lieu précis avec quartier et repère
+- Moyen de paiement du dépôt
+- Dépôt de validation, reste payé à la livraison
 - Commentaire (optionnel)
 - Total calculé en temps réel + bouton « Commander sur WhatsApp »
-- Une indication fixe en bas du formulaire demande d'envoyer une capture d'écran du paiement après le dépôt
+- Une indication juste au-dessus du bouton demande d'envoyer une capture d'écran du paiement après le dépôt
 
 ## Déploiement GitHub Pages
 
