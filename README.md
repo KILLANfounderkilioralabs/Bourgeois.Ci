@@ -43,12 +43,13 @@ Le mode et le moyen choisis sont tous les deux transmis dans le récapitulatif W
 
 ## Champs du formulaire
 
-- Nom complet, numéro WhatsApp
+- Numéro WhatsApp
 - Produit souhaité (texte libre), prix unitaire, quantité, taille/couleur (optionnels)
 - Commune/ville, adresse détaillée
 - Mode de paiement
 - Commentaire (optionnel)
 - Total calculé en temps réel + bouton « Commander sur WhatsApp »
+- Une indication fixe en bas du formulaire demande d'envoyer une capture d'écran du paiement après le dépôt
 
 ## Déploiement GitHub Pages
 
