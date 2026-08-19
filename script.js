@@ -11,7 +11,7 @@
 
 const STORE = {
   name: "Bourgeois Ci",
-  tagline: "Livraison rapide • Paiement à la livraison • dépot de validation",
+  tagline: "Livraison rapide • Dépôt de validation • Reste payé à la livraison",
 
   // Numéro WhatsApp du vendeur — format international SANS "+" ni espaces
   whatsapp: "2250502560403",
@@ -28,11 +28,8 @@ const STORE = {
   // utile si les prix varient selon les commandes reçues sur TikTok)
   defaultUnitPrice: 15000,
 
-  // Moyens de paiement proposés selon le mode choisi par le client.
-  paymentMethodsByMode: {
-    delivery: ["Espèces", "Wave", "Orange Money", "MTN Money"],
-    deposit: ["Wave", "Orange Money", "MTN Money"]
-  }
+  // Moyens de paiement disponibles pour le dépôt de validation.
+  paymentMethods: ["Orange Money", "MTN Money", "Wave"]
 };
 
 // Icônes affichées pour chaque moyen de paiement (facultatif, purement visuel)
@@ -96,8 +93,7 @@ function shadeColor(hex, percent) {
 
 const state = {
   quantity: 1,
-  paymentMode: "",     // "Paiement à la livraison" | "Dépôt pour validation"
-  paymentMethod: ""    // Espèces / Wave / Orange Money / MTN Mobile Money…
+  paymentMethod: "" // Wave / Orange Money / MTN Money
 };
 
 function formatPrice(amount) {
@@ -158,53 +154,17 @@ function updateTotal({ flash = false } = {}) {
 }
 
 /* =============================================================================
-   PAIEMENT — étape 1 : mode (livraison / dépôt), cartes sélectionnables
+   PAIEMENT — moyen de paiement du dépôt de validation
    ========================================================================= */
 
-function initPaymentCards() {
-  const cards = document.querySelectorAll("#paymentCards .payment-card");
-
-  cards.forEach(card => {
-    card.addEventListener("click", () => {
-      state.paymentMode = card.dataset.value;
-      state.paymentMethod = ""; // on repart de zéro si le mode change
-
-      cards.forEach(c => {
-        c.classList.remove("is-checked");
-        c.setAttribute("aria-pressed", "false");
-      });
-      card.classList.add("is-checked");
-      card.setAttribute("aria-pressed", "true");
-
-      clearFieldError("field-payment");
-      renderPaymentMethodSection();
-    });
-  });
-}
-
-/* =============================================================================
-   PAIEMENT — étape 2 : un seul bloc "Moyen de paiement", contenu dynamique
-   ========================================================================= */
-
-function renderPaymentMethodSection() {
-  const section = document.getElementById("paymentMethodSection");
-  const title = document.getElementById("paymentMethodTitle");
+function initPaymentMethods() {
   const optionsWrap = document.getElementById("paymentMethodOptions");
-
-  if (!state.paymentMode) {
-    section.hidden = true;
-    return;
-  }
-
-  const isDeposit = state.paymentMode === "Dépôt pour validation";
-  const methods = isDeposit ? STORE.paymentMethodsByMode.deposit : STORE.paymentMethodsByMode.delivery;
-
-  title.textContent = isDeposit ? "Moyen de paiement du dépôt" : "Moyen de paiement";
+  const methods = STORE.paymentMethods;
 
   optionsWrap.innerHTML = methods
     .map(
       method => `
-      <button type="button" class="payment-card payment-card--compact" data-value="${method}" aria-pressed="${state.paymentMethod === method}">
+      <button type="button" class="payment-card payment-card--compact" data-value="${method}" aria-pressed="false">
         <span class="payment-card__icon">${PAYMENT_METHOD_ICONS[method] || "💳"}</span>
         <span class="payment-card__text">
           <span class="payment-card__title">${method}</span>
@@ -216,7 +176,6 @@ function renderPaymentMethodSection() {
 
   const methodCards = optionsWrap.querySelectorAll(".payment-card");
   methodCards.forEach(card => {
-    if (card.dataset.value === state.paymentMethod) card.classList.add("is-checked");
     card.addEventListener("click", () => {
       state.paymentMethod = card.dataset.value;
       methodCards.forEach(c => {
@@ -229,17 +188,10 @@ function renderPaymentMethodSection() {
       updatePaymentNumberNote();
     });
   });
-
-  updatePaymentNumberNote();
-  section.hidden = false;
 }
 
-/* =============================================================================
-   NUMÉRO DE PAIEMENT — affiché dynamiquement sous le moyen de paiement choisi
-   ========================================================================= */
-
 function updatePaymentNumberNote() {
-  const note = document.getElementById("depositNote");
+  const note = document.getElementById("paymentNumberNote");
   const number = PAYMENT_NUMBERS[state.paymentMethod];
 
   if (number) {
@@ -272,7 +224,7 @@ function validateForm() {
   const city = document.getElementById("city").value.trim();
   const address = document.getElementById("address").value.trim();
 
-  ["field-phone", "field-productName", "field-city", "field-address", "field-payment", "field-paymentMethod"]
+  ["field-phone", "field-productName", "field-city", "field-address", "field-paymentMethod"]
     .forEach(clearFieldError);
 
   const phoneDigits = phone.replace(/[^0-9]/g, "");
@@ -284,10 +236,7 @@ function validateForm() {
 
   if (address.length < 3) { showFieldError("field-address"); isValid = false; }
 
-  if (!state.paymentMode) {
-    showFieldError("field-payment");
-    isValid = false;
-  } else if (!state.paymentMethod) {
+  if (!state.paymentMethod) {
     showFieldError("field-paymentMethod");
     isValid = false;
   }
@@ -332,8 +281,9 @@ function buildWhatsAppMessage() {
     `Adresse : ${address}`,
     "",
     `💳 Paiement`,
-    `Mode : ${state.paymentMode}`,
+    `Dépôt de validation : ${formatPrice(total)}`,
     `Moyen : ${state.paymentMethod}`,
+    `Reste payé à la livraison : oui`,
     "",
     `📝 Commentaire : ${comment || "—"}`
   ];
@@ -391,7 +341,7 @@ function showToast(message) {
 function init() {
   initUnitPrice();
   initQuantityControl();
-  initPaymentCards();
+  initPaymentMethods();
   updateTotal();
 
   ["phone", "productName", "city", "address"].forEach(id => {
