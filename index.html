@@ -100,46 +100,23 @@
         </div>
 
         <div class="field" id="field-address">
-          <label for="address">Adresse détaillée</label>
-          <textarea id="address" name="address" placeholder="Quartier, rue, point de repère…" autocomplete="street-address"></textarea>
+          <label for="address">Adresse / lieu précis</label>
+          <textarea id="address" name="address" placeholder="Quartier, rue, lieu précis, repère pour le livreur…" autocomplete="street-address"></textarea>
           <p class="field-error">⚠ Merci de préciser votre adresse.</p>
         </div>
       </div>
 
-      <!-- Mode de paiement -->
+      <!-- Paiement : dépôt de validation, reste à la livraison -->
       <div class="form-section">
-        <h2 class="form-section__title">💳 Comment souhaitez-vous payer ?</h2>
-        <div class="field" id="field-payment">
-          <div class="payment-cards" id="paymentCards">
-            <button type="button" class="payment-card" data-value="Paiement à la livraison" aria-pressed="false">
-              <span class="payment-card__icon">💵</span>
-              <span class="payment-card__text">
-                <span class="payment-card__title">Paiement à la livraison</span>
-                <span class="payment-card__desc">Je paie lorsque je reçois ma commande.</span>
-              </span>
-              <span class="payment-card__check" aria-hidden="true"></span>
-            </button>
-            <button type="button" class="payment-card" data-value="Dépôt pour validation" aria-pressed="false">
-              <span class="payment-card__icon">📱</span>
-              <span class="payment-card__text">
-                <span class="payment-card__title">Dépôt pour validation</span>
-                <span class="payment-card__desc">Je fais un dépôt à l'avance pour confirmer ma commande.</span>
-              </span>
-              <span class="payment-card__check" aria-hidden="true"></span>
-            </button>
-          </div>
-          <p class="field-error">⚠ Merci de choisir un mode de paiement.</p>
-        </div>
-      </div>
+        <h2 class="form-section__title">💳 Moyen de paiement</h2>
 
-      <!-- Moyen de paiement — un seul bloc, contenu dynamique selon le mode choisi -->
-      <div class="form-section" id="paymentMethodSection" hidden>
-        <h2 class="form-section__title" id="paymentMethodTitle">Moyen de paiement</h2>
         <div class="field" id="field-paymentMethod">
           <div class="payment-cards" id="paymentMethodOptions"></div>
           <p class="field-error">⚠ Merci de choisir un moyen de paiement.</p>
         </div>
-        <p class="pay-note" id="depositNote"></p>
+
+        <p class="pay-note" id="paymentNumberNote" aria-live="polite"></p>
+        <p class="pay-note is-visible" id="depositNote">Dépôt de validation : le reste est payé à la livraison.</p>
       </div>
 
 
