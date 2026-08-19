@@ -11,7 +11,7 @@
 
 const STORE = {
   name: "Bourgeois Ci",
-  tagline: "Livraison rapide • Paiement à la livraison • dépôt de validation",
+  tagline: "Livraison rapide • Paiement à la livraison • dépot de validation",
 
   // Numéro WhatsApp du vendeur — format international SANS "+" ni espaces
   whatsapp: "2250502560403",
@@ -28,14 +28,10 @@ const STORE = {
   // utile si les prix varient selon les commandes reçues sur TikTok)
   defaultUnitPrice: 15000,
 
-  // Texte affiché uniquement si le client choisit "Dépôt pour validation".
-  // Personnalise ce texte avec tes coordonnées de paiement (numéro Wave,
-  // Mobile Money…) si tu veux les afficher directement ici.
-  depositNote: "📸 NB : Une fois sur WhatsApp, merci d'envoyer une capture d'écran de votre paiement Wave pour confirmer votre commande.",
   // Moyens de paiement proposés selon le mode choisi par le client.
   paymentMethodsByMode: {
-    delivery: ["Espèces", "Wave", "Orange Money", "MTN Mobile Money"],
-    deposit: ["Wave", "Orange Money", "MTN Mobile Money"]
+    delivery: ["Espèces", "Wave", "Orange Money", "MTN Money"],
+    deposit: ["Wave", "Orange Money", "MTN Money"]
   }
 };
 
@@ -44,7 +40,14 @@ const PAYMENT_METHOD_ICONS = {
   "Espèces": "💵",
   "Wave": "📲",
   "Orange Money": "🟠",
-  "MTN Mobile Money": "💛"
+  "MTN Money": "💛"
+};
+
+// Numéro de paiement affiché automatiquement selon le moyen de paiement sélectionné.
+const PAYMENT_NUMBERS = {
+  "Orange Money": "07 67 33 67 80",
+  "MTN Money": "05 02 56 04 03",
+  "Wave": "05 02 56 04 03"
 };
 
 /* =============================================================================
@@ -61,7 +64,6 @@ const PAYMENT_METHOD_ICONS = {
   setText("brandTrust", STORE.tagline);
   setText("currencySuffix", STORE.currency);
   setText("footerText", `© ${STORE.name} — Ce site ne stocke aucune donnée. Vos informations sont envoyées uniquement par WhatsApp.`);
-  setText("depositNote", STORE.depositNote);
 
   const logo = document.getElementById("brandLogo");
   if (logo && STORE.logoUrl) {
@@ -188,7 +190,6 @@ function renderPaymentMethodSection() {
   const section = document.getElementById("paymentMethodSection");
   const title = document.getElementById("paymentMethodTitle");
   const optionsWrap = document.getElementById("paymentMethodOptions");
-  const note = document.getElementById("depositNote");
 
   if (!state.paymentMode) {
     section.hidden = true;
@@ -225,11 +226,29 @@ function renderPaymentMethodSection() {
       card.classList.add("is-checked");
       card.setAttribute("aria-pressed", "true");
       clearFieldError("field-paymentMethod");
+      updatePaymentNumberNote();
     });
   });
 
-  note.classList.toggle("is-visible", isDeposit);
+  updatePaymentNumberNote();
   section.hidden = false;
+}
+
+/* =============================================================================
+   NUMÉRO DE PAIEMENT — affiché dynamiquement sous le moyen de paiement choisi
+   ========================================================================= */
+
+function updatePaymentNumberNote() {
+  const note = document.getElementById("depositNote");
+  const number = PAYMENT_NUMBERS[state.paymentMethod];
+
+  if (number) {
+    note.textContent = `Numéro de paiement : ${number}`;
+    note.classList.add("is-visible");
+  } else {
+    note.textContent = "";
+    note.classList.remove("is-visible");
+  }
 }
 
 /* =============================================================================
@@ -248,16 +267,13 @@ function clearFieldError(fieldId) {
 function validateForm() {
   let isValid = true;
 
-  const fullName = document.getElementById("fullName").value.trim();
   const phone = document.getElementById("phone").value.trim();
   const productName = document.getElementById("productName").value.trim();
   const city = document.getElementById("city").value.trim();
   const address = document.getElementById("address").value.trim();
 
-  ["field-fullName", "field-phone", "field-productName", "field-city", "field-address", "field-payment", "field-paymentMethod"]
+  ["field-phone", "field-productName", "field-city", "field-address", "field-payment", "field-paymentMethod"]
     .forEach(clearFieldError);
-
-  if (fullName.length < 2) { showFieldError("field-fullName"); isValid = false; }
 
   const phoneDigits = phone.replace(/[^0-9]/g, "");
   if (phoneDigits.length < 8) { showFieldError("field-phone"); isValid = false; }
@@ -284,7 +300,6 @@ function validateForm() {
    ========================================================================= */
 
 function buildWhatsAppMessage() {
-  const fullName = document.getElementById("fullName").value.trim();
   const phone = document.getElementById("phone").value.trim();
   const productName = document.getElementById("productName").value.trim();
   const size = document.getElementById("size").value.trim();
@@ -300,7 +315,6 @@ function buildWhatsAppMessage() {
     "🛒 NOUVELLE COMMANDE",
     "",
     "👤 Client",
-    `Nom : ${fullName}`,
     `Téléphone : ${phone}`,
     "",
     "📦 Produit",
@@ -380,7 +394,7 @@ function init() {
   initPaymentCards();
   updateTotal();
 
-  ["fullName", "phone", "productName", "city", "address"].forEach(id => {
+  ["phone", "productName", "city", "address"].forEach(id => {
     document.getElementById(id).addEventListener("input", () => {
       clearFieldError(`field-${id}`);
     });
