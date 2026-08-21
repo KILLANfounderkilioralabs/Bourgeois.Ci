@@ -182,7 +182,7 @@ function validateForm() {
   const city = document.getElementById("city").value.trim();
   const address = document.getElementById("address").value.trim();
 
-  ["field-size", "field-phone", "field-city", "field-address", "field-paymentMethod"]
+  ["field-size", "field-phone", "field-city", "field-address", "field-depositPhone", "field-paymentMethod"]
     .forEach(clearFieldError);
 
   if (size.length < 1) { showFieldError("field-size"); isValid = false; }
@@ -193,6 +193,10 @@ function validateForm() {
   if (city.length < 2) { showFieldError("field-city"); isValid = false; }
 
   if (address.length < 3) { showFieldError("field-address"); isValid = false; }
+
+  const depositPhone = document.getElementById("depositPhone").value.trim();
+  const depositPhoneDigits = depositPhone.replace(/[^0-9]/g, "");
+  if (depositPhoneDigits.length < 8) { showFieldError("field-depositPhone"); isValid = false; }
 
   if (!state.paymentMethod) { showFieldError("field-paymentMethod"); isValid = false; }
 
@@ -218,6 +222,7 @@ function buildWhatsAppMessage() {
     "",
     "💳 Dépôt de validation",
     `Montant : ${formatPrice(STORE.depositAmount)}`,
+    `Numéro utilisé pour le dépôt : ${document.getElementById("depositPhone").value.trim()}`,
     `Moyen de paiement : ${state.paymentMethod}`,
     `Numéro de paiement : ${PAYMENT_NUMBERS[state.paymentMethod] || "—"}`,
     "",
@@ -284,7 +289,7 @@ function showToast(message) {
 function init() {
   renderPaymentMethodSection();
 
-  ["size", "phone", "city", "address"].forEach(id => {
+  ["size", "phone", "city", "address", "depositPhone"].forEach(id => {
     document.getElementById(id).addEventListener("input", () => {
       clearFieldError(`field-${id}`);
     });
