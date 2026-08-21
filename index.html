@@ -62,7 +62,11 @@
           <input type="tel" id="depositPhone" name="depositPhone" placeholder="Ex : 05 00 00 00 00" autocomplete="tel" inputmode="tel" />
           <p class="field-error">⚠ Merci d'indiquer le numéro utilisé pour effectuer le dépôt.</p>
         </div>
-        <p class="pay-note" id="depositNote"></p>
+        <div class="field" id="field-depositNote" hidden>
+          <label>Numéro de réception</label>
+          <p class="field-hint">(le numéro sur lequel effectuer le dépôt)</p>
+          <p class="pay-note is-visible" id="depositNote"></p>
+        </div>
       </div>
 
       <!-- 3. Capture du dépôt -->
@@ -76,9 +80,9 @@
         <h2 class="form-section__title">📦 Coordonnées de livraison</h2>
 
         <div class="field" id="field-phone">
-          <label for="phone">Numéro joignable</label>
+          <label for="phone">Numéro WhatsApp</label>
           <input type="tel" id="phone" name="phone" placeholder="Ex : 05 00 00 00 00" autocomplete="tel" inputmode="tel" />
-          <p class="field-error">⚠ Merci d'indiquer un numéro joignable valide.</p>
+          <p class="field-error">⚠ Merci d'indiquer un numéro WhatsApp valide.</p>
         </div>
 
         <div class="field" id="field-city">
