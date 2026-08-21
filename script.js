@@ -43,7 +43,7 @@ const PAYMENT_METHOD_ICONS = {
   "MTN Money": "💛"
 };
 
-// Numéro de paiement affiché automatiquement selon le moyen de paiement sélectionné.
+// Numéro de réception affiché automatiquement selon le moyen de paiement sélectionné.
 const PAYMENT_NUMBERS = {
   "Orange Money": "07 67 33 67 80",
   "MTN Money": "05 02 56 04 03",
@@ -149,15 +149,16 @@ function renderPaymentMethodSection() {
    ========================================================================= */
 
 function updatePaymentNumberNote() {
+  const wrap = document.getElementById("field-depositNote");
   const note = document.getElementById("depositNote");
   const number = PAYMENT_NUMBERS[state.paymentMethod];
 
   if (number) {
-    note.textContent = `Numéro de paiement : ${number}`;
-    note.classList.add("is-visible");
+    note.textContent = number;
+    wrap.hidden = false;
   } else {
     note.textContent = "";
-    note.classList.remove("is-visible");
+    wrap.hidden = true;
   }
 }
 
@@ -224,7 +225,7 @@ function buildWhatsAppMessage() {
     `Montant : ${formatPrice(STORE.depositAmount)}`,
     `Numéro utilisé pour le dépôt : ${document.getElementById("depositPhone").value.trim()}`,
     `Moyen de paiement : ${state.paymentMethod}`,
-    `Numéro de paiement : ${PAYMENT_NUMBERS[state.paymentMethod] || "—"}`,
+    `Numéro de réception : ${PAYMENT_NUMBERS[state.paymentMethod] || "—"}`,
     "",
     "📦 Coordonnées de livraison",
     `Téléphone : ${phone}`,
