@@ -6,12 +6,17 @@
    👉 POUR CRÉER UNE BOUTIQUE POUR UN NOUVEAU CLIENT :
    Modifie UNIQUEMENT l'objet STORE ci-dessous. Le reste du fichier n'a
    normalement pas besoin d'être touché.
+
+   ─────────────────────────────────────────────────────────────────────────
+   ⚠️ PARCOURS DE COMMANDE — ordre unique et obligatoire :
+   1. Taille → 2. Dépôt de validation (3 000 FCFA) → 3. Capture du dépôt →
+   4. Coordonnées de livraison → 5. Livraison prévue demain
    ─────────────────────────────────────────────────────────────────────────
    ========================================================================= */
 
 const STORE = {
   name: "Bourgeois Ci",
-  tagline: "Livraison rapide • Dépôt de validation • Reste payé à la livraison",
+  tagline: "Livraison rapide • Dépôt de validation • Livraison le lendemain",
 
   // Numéro WhatsApp du vendeur — format international SANS "+" ni espaces
   whatsapp: "2250502560403",
@@ -24,17 +29,15 @@ const STORE = {
   // du repo, à côté d'index.html) ou une URL complète "https://...".
   logoUrl: "logo.jpg",
 
-  // Prix unitaire pré-rempli par défaut (le client peut le modifier au besoin,
-  // utile si les prix varient selon les commandes reçues sur TikTok)
-  defaultUnitPrice: 15000,
+  // Montant fixe du dépôt de validation (étape 2 du parcours de commande).
+  depositAmount: 3000,
 
-  // Moyens de paiement disponibles pour le dépôt de validation.
+  // Moyens de paiement proposés pour le dépôt de validation.
   paymentMethods: ["Orange Money", "MTN Money", "Wave"]
 };
 
 // Icônes affichées pour chaque moyen de paiement (facultatif, purement visuel)
 const PAYMENT_METHOD_ICONS = {
-  "Espèces": "💵",
   "Wave": "📲",
   "Orange Money": "🟠",
   "MTN Money": "💛"
@@ -59,8 +62,11 @@ const PAYMENT_NUMBERS = {
 
   setText("brandName", STORE.name);
   setText("brandTrust", STORE.tagline);
-  setText("currencySuffix", STORE.currency);
   setText("footerText", `© ${STORE.name} — Ce site ne stocke aucune donnée. Vos informations sont envoyées uniquement par WhatsApp.`);
+
+  const depositFormatted = formatPrice(STORE.depositAmount);
+  setText("totalValue", depositFormatted);
+  setText("mobileTotal", depositFormatted);
 
   const logo = document.getElementById("brandLogo");
   if (logo && STORE.logoUrl) {
@@ -87,84 +93,29 @@ function shadeColor(hex, percent) {
   return "#" + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
 }
 
-/* =============================================================================
-   ÉTAT
-   ========================================================================= */
-
-const state = {
-  quantity: 1,
-  paymentMethod: "" // Wave / Orange Money / MTN Money
-};
-
 function formatPrice(amount) {
   return `${Number(amount || 0).toLocaleString("fr-FR")} ${STORE.currency}`;
 }
 
 /* =============================================================================
-   PRIX UNITAIRE + QUANTITÉ
+   ÉTAT
    ========================================================================= */
 
-function initUnitPrice() {
-  const input = document.getElementById("unitPrice");
-  input.value = STORE.defaultUnitPrice;
-  input.addEventListener("input", () => {
-    input.value = input.value.replace(/[^0-9]/g, "");
-    updateTotal({ flash: true });
-  });
-}
-
-function initQuantityControl() {
-  const input = document.getElementById("quantity");
-  const minusBtn = document.getElementById("qtyMinus");
-  const plusBtn = document.getElementById("qtyPlus");
-
-  function setQuantity(value) {
-    const qty = Math.max(1, Math.min(99, parseInt(value, 10) || 1));
-    state.quantity = qty;
-    input.value = qty;
-    updateTotal({ flash: true });
-  }
-
-  minusBtn.addEventListener("click", () => setQuantity(state.quantity - 1));
-  plusBtn.addEventListener("click", () => setQuantity(state.quantity + 1));
-  input.addEventListener("change", () => setQuantity(input.value));
-  input.addEventListener("input", () => {
-    input.value = input.value.replace(/[^0-9]/g, "");
-  });
-}
+const state = {
+  paymentMethod: ""    // Orange Money / MTN Money / Wave
+};
 
 /* =============================================================================
-   TOTAL EN TEMPS RÉEL
+   ÉTAPE 2 — Dépôt de validation : moyen de paiement + numéro dynamique
    ========================================================================= */
 
-function updateTotal({ flash = false } = {}) {
-  const unit = parseInt(document.getElementById("unitPrice").value, 10) || 0;
-  const total = unit * state.quantity;
-  const formatted = formatPrice(total);
-
-  setText("totalValue", formatted);
-  setText("mobileTotal", formatted);
-
-  if (flash) {
-    const el = document.getElementById("totalValue");
-    el.classList.remove("is-updated");
-    void el.offsetWidth;
-    el.classList.add("is-updated");
-  }
-}
-
-/* =============================================================================
-   PAIEMENT — moyen de paiement du dépôt de validation
-   ========================================================================= */
-
-function initPaymentMethods() {
+function renderPaymentMethodSection() {
   const optionsWrap = document.getElementById("paymentMethodOptions");
-  const methods = STORE.paymentMethods;
 
-  optionsWrap.innerHTML = methods
+  optionsWrap.innerHTML = STORE.paymentMethods
     .map(
       method => `
-      <button type="button" class="payment-card payment-card--compact" data-value="${method}" aria-pressed="false">
+      <button type="button" class="payment-card payment-card--compact" data-value="${method}" aria-pressed="${state.paymentMethod === method}">
         <span class="payment-card__icon">${PAYMENT_METHOD_ICONS[method] || "💳"}</span>
         <span class="payment-card__text">
           <span class="payment-card__title">${method}</span>
@@ -176,6 +127,7 @@ function initPaymentMethods() {
 
   const methodCards = optionsWrap.querySelectorAll(".payment-card");
   methodCards.forEach(card => {
+    if (card.dataset.value === state.paymentMethod) card.classList.add("is-checked");
     card.addEventListener("click", () => {
       state.paymentMethod = card.dataset.value;
       methodCards.forEach(c => {
@@ -188,10 +140,16 @@ function initPaymentMethods() {
       updatePaymentNumberNote();
     });
   });
+
+  updatePaymentNumberNote();
 }
 
+/* =============================================================================
+   NUMÉRO DE PAIEMENT — affiché dynamiquement sous le moyen de paiement choisi
+   ========================================================================= */
+
 function updatePaymentNumberNote() {
-  const note = document.getElementById("paymentNumberNote");
+  const note = document.getElementById("depositNote");
   const number = PAYMENT_NUMBERS[state.paymentMethod];
 
   if (number) {
@@ -219,27 +177,24 @@ function clearFieldError(fieldId) {
 function validateForm() {
   let isValid = true;
 
+  const size = document.getElementById("size").value.trim();
   const phone = document.getElementById("phone").value.trim();
-  const productName = document.getElementById("productName").value.trim();
   const city = document.getElementById("city").value.trim();
   const address = document.getElementById("address").value.trim();
 
-  ["field-phone", "field-productName", "field-city", "field-address", "field-paymentMethod"]
+  ["field-size", "field-phone", "field-city", "field-address", "field-paymentMethod"]
     .forEach(clearFieldError);
+
+  if (size.length < 1) { showFieldError("field-size"); isValid = false; }
 
   const phoneDigits = phone.replace(/[^0-9]/g, "");
   if (phoneDigits.length < 8) { showFieldError("field-phone"); isValid = false; }
-
-  if (productName.length < 2) { showFieldError("field-productName"); isValid = false; }
 
   if (city.length < 2) { showFieldError("field-city"); isValid = false; }
 
   if (address.length < 3) { showFieldError("field-address"); isValid = false; }
 
-  if (!state.paymentMethod) {
-    showFieldError("field-paymentMethod");
-    isValid = false;
-  }
+  if (!state.paymentMethod) { showFieldError("field-paymentMethod"); isValid = false; }
 
   return isValid;
 }
@@ -249,41 +204,29 @@ function validateForm() {
    ========================================================================= */
 
 function buildWhatsAppMessage() {
-  const phone = document.getElementById("phone").value.trim();
-  const productName = document.getElementById("productName").value.trim();
   const size = document.getElementById("size").value.trim();
-  const color = document.getElementById("color").value.trim();
+  const phone = document.getElementById("phone").value.trim();
   const city = document.getElementById("city").value.trim();
   const address = document.getElementById("address").value.trim();
   const comment = document.getElementById("comment").value.trim();
 
-  const unit = parseInt(document.getElementById("unitPrice").value, 10) || 0;
-  const total = unit * state.quantity;
-
   const lines = [
     "🛒 NOUVELLE COMMANDE",
     "",
-    "👤 Client",
+    "📏 Taille",
+    `Taille : ${size}`,
+    "",
+    "💳 Dépôt de validation",
+    `Montant : ${formatPrice(STORE.depositAmount)}`,
+    `Moyen de paiement : ${state.paymentMethod}`,
+    `Numéro de paiement : ${PAYMENT_NUMBERS[state.paymentMethod] || "—"}`,
+    "",
+    "📦 Coordonnées de livraison",
     `Téléphone : ${phone}`,
-    "",
-    "📦 Produit",
-    `Nom : ${productName}`,
-    `Quantité : ${state.quantity}`,
-    `Taille : ${size || "—"}`,
-    `Couleur : ${color || "—"}`,
-    "",
-    "💰 Montant",
-    `Prix unitaire : ${formatPrice(unit)}`,
-    `Total : ${formatPrice(total)}`,
-    "",
-    "🚚 Livraison",
     `Commune : ${city}`,
     `Adresse : ${address}`,
     "",
-    `💳 Paiement`,
-    `Dépôt de validation : ${formatPrice(total)}`,
-    `Moyen : ${state.paymentMethod}`,
-    `Reste payé à la livraison : oui`,
+    "🚚 Livraison prévue demain",
     "",
     `📝 Commentaire : ${comment || "—"}`
   ];
@@ -339,12 +282,9 @@ function showToast(message) {
    ========================================================================= */
 
 function init() {
-  initUnitPrice();
-  initQuantityControl();
-  initPaymentMethods();
-  updateTotal();
+  renderPaymentMethodSection();
 
-  ["phone", "productName", "city", "address"].forEach(id => {
+  ["size", "phone", "city", "address"].forEach(id => {
     document.getElementById(id).addEventListener("input", () => {
       clearFieldError(`field-${id}`);
     });
